@@ -1,65 +1,79 @@
-const express = require('express');
-const path = require('path');
-const crypto = require('crypto');
-const mongoose = require('mongoose');
-const multer = require('multer');
-const GridFsStorage = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
-const methodOverride = require('method-override');
+const express = require("express");
+const multer = require("multer");
+const uuid = require("uuid").v4;
 
-const app = express();
+const path = require("path");
+const fs = require("fs");
 
-
-//Middleware
-app.set('view engine', 'ejs');
-app.use(methodOverride('_method'));
-app.use(express.json());
-app.use(express.urlencoded({
-  extended: true
-}));
-
-// Mongo URI
-const mongoURI = 'mongodb://localhost:27017';
-
-// Create mongo connection
-const conn = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Init gfs
-let gfs;
-
-conn.once('open', () => {
-  // Init stream
-  gfs = Grid(conn.db, mongoose.mongo);
-  gfs.collection('uploads');
-})
-
-// Create storage engine
-const storage = new GridFsStorage({
-  url: mongoURI,
-  file: (req, file) => {
-    return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
-        if (err) {
-          return reject(err);
-        }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
-        const fileInfo = {
-          filename: filename,
-          bucketName: 'uploads'
-        };
-        resolve(fileInfo);
-      });
+const directoryPath = path.join(__dirname, "uploads");
+var dirObj = {};
+let readDirectory = function () {
+  fs.readdir(directoryPath, function (err, files) {
+    //handling error
+    if (err) {
+      return console.log("Unable to scan directory: " + err);
+    }
+    files.forEach(function (file) {
+      // If its a folder
+      if (!file.includes(".")) {
+        // Call method again
+        fs.readdir(path.join(directoryPath, file), function (err, files) {
+          //handling error
+          if (err) {
+            return console.log("Unable to scan directory: " + err);
+          }
+          //Add all children into array with folder as paramater
+          dirObj[`${file}`] = files;
+          // dirObj.push({ [file]: [files] });
+        });
+      } else {
+        dirObj[`file`] = null;
+      }
     });
-  }
+  });
+};
+
+// setTimeout((x) => {
+//   console.log(JSON.stringify(dirObj, null, 2));
+// }, 1000);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    var dir = `./uploads/${req.body.id}`;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const { originalname } = file;
+    // cb(null, `${uuid()}-${originalname}`);
+    cb(null, `${originalname}`);
+  },
 });
+
 const upload = multer({ storage });
 
+const app = express();
+app.use(express.static("public"));
 
-app.get('/',(req,res) => {
-    res.render('index');
-})
+app.post("/upload", upload.array("avatar"), (req, res) => {
+  return res.json({ status: "OK" });
+});
 
-const port = 5000;
-app.listen(port, () => {
-    console.log(`Server is listening on Port ${port}`);
-})
+app.get("/directory/:id", (req, res) => {
+  readDirectory();
+  setTimeout((x) => {
+    // res.send(dirObj[`${req.params.id}`]);
+    res.sendFile("C:/Users/brand/Programming/CyberJS/uploads/15/france.jpg");
+  }, 1000);
+});
+
+app.get("/directory", (req, res) => {
+  readDirectory();
+  setTimeout((x) => {
+    res.send(JSON.stringify(dirObj, null, 2));
+  }, 1000);
+});
+
+app.listen(3001, () => console.log("App is listening..."));
