@@ -65,7 +65,7 @@ app.get("/directory/:id", (req, res) => {
   readDirectory();
   setTimeout((x) => {
     // res.send(dirObj[`${req.params.id}`]);
-    res.sendFile("C:/Users/brand/Programming/CyberJS/uploads/15/france.jpg");
+    res.sendFile(path.join(__dirname, "/uploads/15/test.txt"));
   }, 1000);
 });
 
