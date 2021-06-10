@@ -7,6 +7,7 @@ const fs = require("fs");
 
 const directoryPath = path.join(__dirname, "uploads");
 var dirObj = {};
+
 let readDirectory = function () {
   fs.readdir(directoryPath, function (err, files) {
     //handling error
@@ -32,6 +33,20 @@ let readDirectory = function () {
     });
   });
 };
+readDirectory();
+
+
+let getFilesInFolder = function (id) {
+  return dirObj[`${id}`];
+}
+
+let initUploads = function () {
+  var dir = `./uploads`;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+}
+initUploads();
 
 // setTimeout((x) => {
 //   console.log(JSON.stringify(dirObj, null, 2));
@@ -58,19 +73,28 @@ const app = express();
 app.use(express.static("public"));
 
 app.post("/upload", upload.array("avatar"), (req, res) => {
+  readDirectory();
   return res.json({ status: "OK" });
 });
 
+app.get("/directory/:id/:file", (req, res) => {
+
+  var dir = `./uploads/${req.params.id}/${req.params.file}`;
+  console.log(dir);
+    if (fs.existsSync(dir)) {
+      res.sendFile(path.join(__dirname, dir));
+    }
+    // res.send(getFilesInFolder(req.params.id));
+});
+
 app.get("/directory/:id", (req, res) => {
-  readDirectory();
-  setTimeout((x) => {
-    // res.send(dirObj[`${req.params.id}`]);
-    res.sendFile(path.join(__dirname, "/uploads/15/test.txt"));
-  }, 1000);
+  // setTimeout((x) => {
+    res.send(getFilesInFolder(req.params.id));
+  //   res.sendFile(path.join(__dirname, "/uploads/15/test.txt"));
+  // }, 1000);
 });
 
 app.get("/directory", (req, res) => {
-  readDirectory();
   setTimeout((x) => {
     res.send(JSON.stringify(dirObj, null, 2));
   }, 1000);
