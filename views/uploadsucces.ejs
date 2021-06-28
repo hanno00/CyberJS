@@ -1,0 +1,9 @@
+<%- include('header.ejs') %>
+    <p>Upload Succesful</p>
+
+    <form method="POST" action="/login">
+        <input type="text" name="id" id="id" value="<%= username %>" hidden>
+        <input type="submit" value="Click here to return to your files">
+    </form>
+
+    <%- include('footer.ejs') %>

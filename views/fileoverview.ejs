@@ -1,0 +1,56 @@
+<%- include('header.ejs') %>
+    <h1>
+        Username:
+        <div style="font-weight: normal;">
+            <%= username %>
+        </div>
+    </h1>
+    <br>
+    <h1>Files:</h1>
+    <table style="width:40%">
+        <tr>
+            <th style="text-align: left; font-weight: bold;" colspan="2">Files</th>
+        </tr>
+        <%
+        files.forEach((x) => { 
+    %>
+            <tr style="border-top: 1px solid black;">
+                <td style="width:50%">
+                    <%= x %>
+                </td>
+                <% var path = "/" + username + "/" + x;%>
+                    <td style="width:20%"><a href="<%= path %>" download>Click to Download</a></td>
+            </tr>
+
+            <%  
+        });
+    %>
+
+    </table>
+
+    <br>
+    <h1>Upload files:</h1>
+
+    <form method="POST" enctype="multipart/form-data" action="/upload">
+        <input hidden type="text" name="id" value="<%= username %>">
+        <input type="file" name="avatar">
+        <input type="submit" value="Submit">
+    </form>
+
+    <br>
+    <a href="/">Return to homepage</a>
+
+
+
+    <%
+        if (username == "admin") {
+    %>
+        <p style="font-weight: bold;">Show json of all files in the directory</p>
+        <p>
+            <%= directory %>
+        </p>
+        <%
+        }
+    %>
+
+            <%- include('footer.ejs') %>

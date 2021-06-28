@@ -1,0 +1,10 @@
+<%- include('header.ejs') %>
+    <a href="/" class="link">Go Back</a>
+    <p>Login failed.</p>
+
+    <form method="POST" action="/createnewuser">
+        <input type="text" name="id" id="id" value="<%= username %>" hidden>
+        <input type="submit" value="Click here to create new user">
+    </form>
+
+    <%- include('footer.ejs') %>
